@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "696453773819",
+    "firebase_url": "https://usersanddata.firebaseio.com",
+    "project_id": "usersanddata",
+    "storage_bucket": "usersanddata.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696453773819:android:afb0d76c60ca8a63",
+        "android_client_info": {
+          "package_name": "com.example.mich.usersanddata"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "696453773819-ocoi5bn3kl6nies5iv9j3gs5b6to9d3v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQE9zvvUYea36lANuoCgIk4Hr02AankNk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
