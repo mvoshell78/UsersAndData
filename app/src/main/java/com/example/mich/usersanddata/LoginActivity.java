@@ -1,5 +1,6 @@
 package com.example.mich.usersanddata;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -123,7 +124,10 @@ public class LoginActivity extends AppCompatActivity  {
                             editor.putString("username", email);
                             editor.putString("password", password);
                             editor.commit();
+                            Intent loginIntent =  new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(loginIntent);
                             finish();
+
                         }
 
 
@@ -154,6 +158,8 @@ public class LoginActivity extends AppCompatActivity  {
                             SharedPreferences.Editor editor = sharedPreferences.edit();
                             editor.putString("username", email);
                             editor.putString("password", password);
+                            Intent loginIntent =  new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(loginIntent);
                             finish();
 
                             editor.commit();

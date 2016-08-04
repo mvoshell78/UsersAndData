@@ -1,12 +1,14 @@
 package com.example.mich.usersanddata;
 
+import java.io.Serializable;
+
 /**
  * Created by Mich on 8/3/16.
  */
-public class GroceryItem {
+public class GroceryItem implements Serializable{
 
     public String mGroceryItem;
-    public Integer mQty;
+    public int mQty;
 
 
 
