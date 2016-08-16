@@ -18,4 +18,5 @@
     <string name="action_sign_up">Register</string>
     <string name="action_sign_out">Sign out</string>
     <string name="action_add">add</string>
+    <string name="title_activity_edit">EditActivity</string>
 </resources>

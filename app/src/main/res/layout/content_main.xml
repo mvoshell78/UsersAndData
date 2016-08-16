@@ -21,9 +21,8 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
         android:ems="10"
-        android:id="@+id/emailTextField"
+        android:id="@+id/itemFeild"
         android:layout_below="@+id/email"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
@@ -31,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Qty"
-        android:layout_below="@+id/emailTextField"
+        android:layout_below="@+id/itemFeild"
         android:id="@+id/pssword" />
 
     <EditText
@@ -39,26 +38,18 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:ems="10"
-        android:id="@+id/passwordTextField"
+        android:id="@+id/qtyFeild"
         android:layout_below="@+id/pssword"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Click to delete"
-        android:layout_below="@+id/passwordTextField"
-        android:id="@+id/textView"
-
-        android:layout_centerHorizontal="true" />
+  x
 
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/list_container"
-    android:layout_below="@+id/textView">
+    android:layout_below="@+id/qtyFeild">
 
 
 

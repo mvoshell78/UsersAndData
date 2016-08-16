@@ -1,8 +1,11 @@
 package com.example.mich.usersanddata;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -16,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,15 +45,16 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
     private DatabaseReference mDatabase;
     ArrayList<GroceryItem> groceryList;
     FirebaseUser user;
-    private EditText mEmailField;
-    private EditText mPasswordField;
-    TextView email;
-    TextView passwordt;
+    private EditText groceryItem;
+    private EditText qtyField;
+    TextView itemTextField;
+    TextView qtyTextField;
     private static final String REQUIRED = "Required";
     SharedPreferences sharedPreferences;
     String username;
     String password;
     String uuid;
+     int intBoby;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,21 +64,36 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
         setSupportActionBar(toolbar);
         groceryList = new ArrayList<GroceryItem>();
 
-
-        mEmailField = (EditText) findViewById(R.id.emailTextField);
-        mPasswordField = (EditText) findViewById(R.id.passwordTextField);
-        email = (TextView) findViewById(R.id.email);
-        passwordt = (TextView) findViewById(R.id.pssword);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        groceryItem = (EditText) findViewById(R.id.itemFeild);
+        qtyField = (EditText) findViewById(R.id.qtyFeild);
+        itemTextField = (TextView) findViewById(R.id.email);
+        qtyTextField = (TextView) findViewById(R.id.pssword);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         username = sharedPreferences.getString("username","");
         password = sharedPreferences.getString("password","");
+        uuid = sharedPreferences.getString("uuid","");
+
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
+        mDatabase.keepSynced(true);
 
 
+        if(!isOnline()){
+            new AlertDialog.Builder(MainActivity.this)
+                .setTitle("No Firebase connection")
+                .setMessage("A connection to Firebase could not be established. You can continue to use the app and when one is establisehd your data will be synced automatically.")
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                })
+
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+        }
 
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -84,15 +104,17 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
 
                 if (user != null) {
                     uuid =  user.getUid();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("uuid", uuid);
+                    editor.commit();
 
                  dataChangeListener();
 
+
                 } else {
 
-                    Intent loginIntent =  new Intent(MainActivity.this, LoginActivity.class);
-                    startActivity(loginIntent);
-                    finish();
-
+                        Intent loginIntent =  new Intent(MainActivity.this, LoginActivity.class);
+                        startActivity(loginIntent);
 
 
                 }
@@ -147,11 +169,13 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
         mAuth.addAuthStateListener(mAuthListener);
         dataChangeListener();
 
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         dataChangeListener();
     }
 
@@ -163,10 +187,7 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
 
         }
 
-
-
     }
-
 
 
 
@@ -174,50 +195,77 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
         username = "";
         password = "";
 
+        if (isOnline()){
+             mAuth.signOut();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("No Firebase connection")
+                    .setMessage("Loging out with out an internet connection will prevent you from accessing your data. You will require an active connection to back login.")
+                    .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            mAuth.signOut();
+                        }
+                    })
 
-        mAuth.signOut();
+
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                         // do nothing
+
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+
 
 
     }
     private void submitPost() {
-        final String title = mEmailField.getText().toString();
-        final String body =  mPasswordField.getText().toString();
+        final String itemName = groceryItem.getText().toString();
+        final String itemQty =  qtyField.getText().toString();
 
+        if (!isOnline()){
+            Toast.makeText(this,"Data will sync when connection is established",Toast.LENGTH_SHORT).show();
+        }
 
-        // Title is required
-        if (TextUtils.isEmpty(title)) {
-            mEmailField.setError(REQUIRED);
+        // Item name is required
+        if (TextUtils.isEmpty(itemName)) {
+            groceryItem.setError(REQUIRED);
             return;
         }
 
-        // Body is required
-        if (TextUtils.isEmpty(body)) {
-            mPasswordField.setError(REQUIRED);
+        // qty is required
+        if (TextUtils.isEmpty(itemQty)) {
+            qtyField.setError(REQUIRED);
             return;
         }
 
-        if(title != ""){
-            if (body != ""){
-                final int intBoby =  Integer.parseInt( mPasswordField.getText().toString());
-                GroceryItem groceryItem = new GroceryItem(title,intBoby);
+        if(itemName != ""){
+            if (itemQty != ""){
 
-                groceryList.add(groceryItem);
 
-                mDatabase.child(uuid).setValue(groceryList);
+                intBoby =  Integer.parseInt( qtyField.getText().toString());
 
-                dataChangeListener();
-                mEmailField.setText("");
-                mPasswordField.setText("");
+                GroceryItem groceryItem = new GroceryItem(itemName,intBoby);
+
+
+                    groceryList.add(groceryItem);
+
+                    mDatabase.child(uuid).setValue(groceryList);
+
+                    dataChangeListener();
+
+                this.groceryItem.setText("");
+                qtyField.setText("");
             }
 
         }
-
-//            mDatabase.child(uuid).child("qty").setValue(intBoby);
    }
 
    public void dataChangeListener() {
 
-       // uuid = sharedPreferences.getString("uuid","");
        if (uuid != null) {
 
 
@@ -225,76 +273,45 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
                @Override
                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                   ArrayList<GroceryItem> grocery = new ArrayList<GroceryItem>();
-                   groceryList.clear();
-                   grocery.clear();
 
-                   grocery = (ArrayList<GroceryItem>) dataSnapshot.getValue();
-                        if (grocery != null){
-                            for (int i = 0; i < grocery.size(); i++) {
+                       ArrayList<GroceryItem> grocery = new ArrayList<GroceryItem>();
 
-                                Map<String, Object> x = new HashMap<>();
-                                x = (Map<String, Object>) grocery.get(i);
-                                Long lon = (Long) x.get("mQty");
-                                int qty = (int) (long) lon;
-                                String groceryListItem = (String) x.get("mGroceryItem");
-                                GroceryItem groceryItem = new GroceryItem(groceryListItem, qty);
+                       groceryList.clear();
 
-                                groceryList.add(groceryItem);
 
-                            }
-                        }
+                       grocery.clear();
 
-                   createFrag(groceryList);
+                       grocery = (ArrayList<GroceryItem>) dataSnapshot.getValue();
 
-               }
+                           for (int i = 0; i < grocery.size(); i++) {
 
-               @Override
-               public void onCancelled(DatabaseError databaseError) {
-                   // Getting Post failed, log a message
+                               Map<String, Object> x = new HashMap<>();
+                               x = (Map<String, Object>) grocery.get(i);
+                               Long lon = (Long) x.get("mQty");
+                               int qty = (int) (long) lon;
+                               String groceryListItem = (String) x.get("mGroceryItem");
+                               GroceryItem groceryItem = new GroceryItem(groceryListItem, qty);
 
-                   // ...
-               }
+                               groceryList.add(groceryItem);
+
+
+                           }
+
+
+                       createFrag(groceryList);
+
+                   }
+
+                   @Override
+                   public void onCancelled (DatabaseError databaseError){
+                       // Getting Post failed, log a message
+
+                       // ...
+                   }
+
            };
            mDatabase.child(uuid).addValueEventListener(valueEventListener);
-
-//             mDatabase.child(uuid).addListenerForSingleValueEvent (valueEventListener = new ValueEventListener() {
-//                  @Override
-//                  public void onDataChange(DataSnapshot dataSnapshot) {
-//                      // Get user value
-//
-//                      ArrayList<GroceryItem> grocery = new ArrayList<GroceryItem>();
-//                      groceryList.clear();
-//
-//                      grocery = (ArrayList<GroceryItem>) dataSnapshot.getValue();
-//
-//                      for(int i = 0; i< grocery.size(); i++){
-//
-//                          Map<String, Object> x = new HashMap<>();
-//                          x = (Map<String, Object>) grocery.get(i);
-//                          Long lon = (Long) x.get("mQty");
-//                          int qty = (int) (long) lon;
-//                          String groceryListItem = (String) x.get("mGroceryItem");
-//                          GroceryItem groceryItem = new GroceryItem(groceryListItem,qty);
-//
-//                          groceryList.add(groceryItem);
-//
-//
-//                      }
-//
-//                      //mDatabase.removeEventListener(this);
-//                      createFrag();
-//                  }
-//
-//                  @Override
-//                  public void onCancelled(DatabaseError databaseError) {
-////                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-//                  }
-//              });
-
-
        }
-
 
    }
 
@@ -318,23 +335,72 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
 
 
         new AlertDialog.Builder(this)
-                .setTitle("Delete entry")
-                .setMessage("Are you sure you want to delete this entry?")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                .setTitle("What would you like to do?")
+                .setMessage("Would you like to edit or delete this entry?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         groceryList.remove(position);
                         mDatabase.child(uuid).setValue(groceryList);
                     }
                 })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+
+                .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // do nothing
+                    }
+                })
+                .setNegativeButton("Edit", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                        Intent editIntent =  new Intent(MainActivity.this,EditActivity.class);
+                        editIntent.putExtra("item", groceryList.get(position).getmGroceryItem());
+                        editIntent.putExtra("qty",groceryList.get(position).getmQty());
+                        editIntent.putExtra("position",position);
+
+                        startActivityForResult(editIntent, 1234);
+
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
 
-//        ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(ListFragment.TAG);
-//        fragment.setUpList(groceryList);
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1234 || resultCode == RESULT_OK){
+
+             String reItem = data.getStringExtra("item");
+            int reQty = data.getIntExtra("qty", 0 );
+            int rePosition = data.getIntExtra("position",0);
+            GroceryItem reGroceryItem = new GroceryItem(reItem,reQty);
+
+            groceryList.set(rePosition, reGroceryItem);
+
+            mDatabase.child(uuid).setValue(groceryList);
+
+            dataChangeListener();
+
+        }
+    }
+    protected boolean isOnline() {
+
+        ConnectivityManager mgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = mgr.getActiveNetworkInfo();
+
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+
+            return true;
+
+        } else{
+
+            return false;
+        }
+    }
+
+
+
 }
