@@ -200,21 +200,13 @@ public class MainActivity extends AppCompatActivity implements getListPosition {
         } else {
             new AlertDialog.Builder(this)
                     .setTitle("No Firebase connection")
-                    .setMessage("Loging out with out an internet connection will prevent you from accessing your data. You will require an active connection to back login.")
-                    .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                    .setMessage("An active connection is required to logout, check your internet connection and try again.")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            mAuth.signOut();
+
                         }
                     })
 
-
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-
-                         // do nothing
-
-                        }
-                    })
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
         }

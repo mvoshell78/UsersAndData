@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity  {
             mEmailView.setError(null);
 
         } else {
-            mEmailView.setError("Not a vaild itemTextField");
+            mEmailView.setError("Email address requires an @ symbol to be valid");
             valid = false;
         }
 
